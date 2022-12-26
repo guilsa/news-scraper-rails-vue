@@ -158,6 +158,7 @@ PLATFORMS
 DEPENDENCIES
   debug
   faker
+  nokogiri
   puma (~> 5.0)
   rails (~> 7.0.4)
   sqlite3 (~> 1.4)

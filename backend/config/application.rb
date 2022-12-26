@@ -36,5 +36,7 @@ module Backend
     # Middleware like session, flash, cookies can be added back manually.
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
+    # README: https://guides.rubyonrails.org/autoloading_and_reloading_constants.html#config-autoload-paths
+    config.autoload_paths << "#{Rails.root}/lib"
   end
 end
