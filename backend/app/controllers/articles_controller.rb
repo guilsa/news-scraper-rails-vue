@@ -8,4 +8,10 @@ class ArticlesController < ApplicationController
     article = Article.find(params[:id])
     render json: article
   end
+
+  def create
+    article_params = params.require(:article).permit(:title, :url, :description)
+    article = Article.create(article_params)
+    render json: article
+  end
 end
