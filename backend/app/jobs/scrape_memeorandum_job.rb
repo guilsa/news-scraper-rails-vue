@@ -5,12 +5,7 @@
 class ScrapeMemeorandumJob < ApplicationJob
   queue_as :default
 
-  def perform(article)
-    begin
-      articles = ScraperAdapter::Memeorandum.run
-    rescue
-      puts "Error scraping Memeorandum"
-    end
-    article.insert_all(articles)
+  def perform(article_model)
+    ScraperAdapter::Memeorandum.save(article_model)
   end
 end
