@@ -1,5 +1,5 @@
 # https://guides.rubyonrails.org/active_job_basics.html
-# ScrapeMemeorandumJob.perform_later(url: 'https://www.memeorandum.com/')
+# ScrapeMemeorandumJob.perform_later()
 
 # todo: have external cron job call api endpoint which invokes this
 class ScrapeMemeorandumJob < ApplicationJob
