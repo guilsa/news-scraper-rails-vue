@@ -2,13 +2,17 @@
 # curl \
 #   -H "Accept: application/json" \
 #   -H "Content-type: application/json" \
+#   -H "Authorization: FLKWDFJSDFLKJASKLDJ32489" \
 #   -X POST \
-#   -d ' {"title":"Judge rules against Kari Lake in bid to overturn Arizona election results", "description": "The defeated GOP candidate for Arizona governor claimed that illegal voting and printer malfunctions had cost her the November election", "url": "https://www.washingtonpost.com/politics/2022/12/24/kari-lake-election-lawsuit/"}' \
+#   -d ' {"title":"title", "source": "NUT", "url": "https://www.washingtonpost.com/politics/2022/12/24/kari-lake-election-lawsuit/", "description": "desc", "citations_amount": "44", "date": "2022-03-22"}' \
 #   http://127.0.0.1:3000/api/v1/articles/
 
 module Api
   module V1
     class ArticlesController < ApplicationController
+
+      before_action :is_protected, only: :create
+
       def index
         articles = Article.all
         render json: articles
@@ -20,10 +24,19 @@ module Api
       end
     
       def create
-        article_params = params.require(:article).permit(:title, :url, :description)
+        article_params = params.require(:article).permit(
+          :title, :source, :url, :description, :citations_amount, :date
+        )
         article = Article.create(article_params)
         render json: article
       end
+
+      private
+        def is_protected
+          if request.headers["Authorization"] != 'FLKWDFJSDFLKJASKLDJ32489'
+            render json: { error: 'Not Authorized' }, status: :unauthorized
+          end
+        end
     end
   end
 end
