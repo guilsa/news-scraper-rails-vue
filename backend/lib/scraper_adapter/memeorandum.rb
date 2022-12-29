@@ -10,6 +10,7 @@ module ScraperAdapter
       rescue
         puts "Error scraping Memeorandum"
       end
+      articles.sort_by! { |article| article[:citations_amount] }.reverse!
       articles.each do |article|
         # todo: make it faster - it's currently slow, but it works
         article_model.create(article)
