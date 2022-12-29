@@ -1,11 +1,20 @@
-# Curl test:
+# Curl create v1:
 # curl \
 #   -H "Accept: application/json" \
 #   -H "Content-type: application/json" \
 #   -H "Authorization: FLKWDFJSDFLKJASKLDJ32489" \
 #   -X POST \
 #   -d ' {"title":"title", "source": "NUT", "url": "https://www.washingtonpost.com/politics/2022/12/24/kari-lake-election-lawsuit/", "description": "desc", "citations_amount": "44", "date": "2022-03-22"}' \
-#   http://127.0.0.1:3000/api/v1/articles/
+#     https://news-scraper-rails-vue.herokuapp.com/api/v1/articles
+  # http://127.0.0.1:3000/api/v1/articles/
+# Curl create v2 (with job):
+# curl \
+#   -H "Accept: application/json" \
+#   -H "Content-type: application/json" \
+#   -H "Authorization: FLKWDFJSDFLKJASKLDJ32489" \
+#   -X POST \
+#     http://127.0.0.1:3000/api/v1/articles
+#     https://news-scraper-rails-vue.herokuapp.com/api/v1/articles
 
 module Api
   module V1
@@ -24,11 +33,15 @@ module Api
       end
     
       def create
-        article_params = params.require(:article).permit(
-          :title, :source, :url, :description, :citations_amount, :date
-        )
-        article = Article.create(article_params)
-        render json: article
+        # article_params = params.require(:article).permit(
+        #   :title, :source, :url, :description, :citations_amount, :date
+        # )
+        # article = Article.create(article_params)
+        # render json: article
+        ScrapeMemeorandumJob.perform_later(Article)
+        
+        # return only 200
+        render nothing: true, status: 200
       end
 
       private
