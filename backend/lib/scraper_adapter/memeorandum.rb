@@ -10,7 +10,10 @@ module ScraperAdapter
       rescue
         puts "Error scraping Memeorandum"
       end
-      article_model.insert_all(articles)
+      articles.each do |article|
+        # todo: make it faster - it's currently slow, but it works
+        article_model.create(article)
+      end
     end
     def self.run
       # https://blog.appsignal.com/2021/01/13/using-mixins-and-modules-in-your-ruby-on-rails-application.html
