@@ -17,12 +17,13 @@ ActiveRecord::Schema[7.0].define(version: 2022_12_26_054209) do
   create_table "articles", force: :cascade do |t|
     t.string "title"
     t.string "source"
-    t.string "url"
+    t.string "url", null: false
     t.string "description"
     t.integer "citations_amount"
     t.string "date"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["url"], name: "index_articles_on_url", unique: true
   end
 
 end

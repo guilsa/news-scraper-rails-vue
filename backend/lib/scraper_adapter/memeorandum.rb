@@ -11,18 +11,7 @@ module ScraperAdapter
         puts "Error scraping Memeorandum"
       end
       articles.sort_by! { |article| article[:citations_amount] }.reverse!
-      total = 0
-      total_with_empty_description = 0
-      articles.each do |article|
-        # todo: make it faster - it's currently slow, but it works
-        article_model.create(article)
-        if !article[:description].nil? && article[:description].length > 0
-          total_with_empty_description += 1
-        end
-        total += 1
-      end
-      puts "Total articles: #{total}"
-      puts "Total articles with empty description: #{total_with_empty_description}"
+      article_model.insert_all(articles)
     end
 
     def self.run
