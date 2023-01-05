@@ -20,10 +20,6 @@ module ScraperAdapter
 
       articles = []
 
-      date = doc.css('.pagecont .rnhang').map(&:content)[0]
-      date = date.delete('\n\\').split(', ')[1..2].join(', ')
-      date = Date.parse(date).strftime('%Y-%m-%d')
-
       doc.css('.clus').each do |data|
         article = {}
 
@@ -33,8 +29,8 @@ module ScraperAdapter
         article[:description] = data.css('.ii').map(&:content)[0]
         citations = data.css('.item .mls a').map { |citations| citations.content } # includes all `related` links
         article[:citations_amount] = citations.length
-        article[:date] = date
-        
+        article[:date] = Date.today.strftime('%Y-%m-%d')
+
         articles << article
       end
 
