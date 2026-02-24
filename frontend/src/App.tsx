@@ -1,34 +1,48 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useEffect } from 'react'
+import ArticleList from '@components/ArticleList'
+import { useFetch } from '@hooks/useFetch'
+import { type Article } from '@/types/article'
+import '@styles/App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [articles, setArticles] = useState<Article[]>([])
+  const [page, setPage] = useState(1)
+
+  const params = new URLSearchParams({
+    page: page.toString(),
+    limit: '50',
+  })
+
+  const { status, data, error } = useFetch<Article[]>(`/articles?${params.toString()}`)
+
+  useEffect(() => {
+    if (status !== 'fetched' || !Array.isArray(data) || data.length === 0) return
+    setArticles((oldArticles) => [...oldArticles, ...data])
+  }, [status, data])
+
+  useEffect(() => {
+    if (status === 'fetching') return
+
+    function handleScroll() {
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
+        setPage((prev) => prev + 1)
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [status])
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <main>
+      <header>updated: {new Date().toLocaleString()}</header>
+
+      <section>
+        {status === 'error' && <div>{error}</div>}
+        {status === 'fetching' && <span>Loading.....</span>}
+        <ArticleList data={articles} />
+      </section>
+    </main>
   )
 }
 

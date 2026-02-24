@@ -1,0 +1,38 @@
+.date {
+  font-weight: 800;
+  font-size: 30px;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.container {
+  border-radius: 5px;
+  padding: 2px auto;
+  font-size: 1em;
+}
+
+.publication-name {
+  font-size: 0.9em;
+  color: #b5179e;
+  font-weight: 700;
+  margin-bottom: 7px;
+}
+
+.title-description {
+  font-size: 0.9em;
+  text-align: left;
+  margin-bottom: 25px;
+}
+
+.title-description h3 {
+  display: inline;
+}
+
+.title-description p {
+  display: inline;
+  padding-left: 15px;
+}
+
+.capitalize {
+  text-transform: capitalize;
+}
