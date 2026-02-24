@@ -1,6 +1,6 @@
 import { useEffect, useRef, useReducer } from 'react'
 
-const BASE_URL = '/api/v1'
+const BASE_URL = import.meta.env.VITE_API_URL || 'https://api.guilsa.com/api/v1'
 
 type FetchState<T> = {
   status: 'idle' | 'fetching' | 'fetched' | 'error'
