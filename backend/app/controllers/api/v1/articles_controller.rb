@@ -46,7 +46,15 @@ module Api
 
       private
         def is_protected
-          if request.headers["Authorization"] != 'FLKWDFJSDFLKJASKLDJ32489'
+          api_token = ENV['NEWS_SCRAPER_API_TOKEN']
+
+          if api_token.nil? || api_token.empty?
+            Rails.logger.error "NEWS_SCRAPER_API_TOKEN environment variable is not set"
+            render json: { error: 'Server configuration error' }, status: :internal_server_error
+            return
+          end
+
+          if request.headers["Authorization"] != api_token
             render json: { error: 'Not Authorized' }, status: :unauthorized
           end
         end
