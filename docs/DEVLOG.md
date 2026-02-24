@@ -1,3 +1,100 @@
+2026
+
+## Feb 23
+
+*Docker Deployment Infrastructure - Moving from Heroku to Self-Hosted VPS*
+
+After years of this app sitting dormant on Heroku, finally got it deployed to a self-hosted VPS (Hetzner) using Docker. Worked with Claude Code to learn the workflow and build everything systematically.
+
+**What we built:**
+
+1. **Fixed Security Issues:**
+   - The hardcoded API token (`FLKWDFJSDFLKJASKLDJ32489`) was a massive blocker listed in the Aug 14, 2025 devlog
+   - Moved it to `NEWS_SCRAPER_API_TOKEN` environment variable
+   - Added validation to fail gracefully if token isn't configured
+   - Generated secure secrets for production (PostgreSQL password, Rails SECRET_KEY_BASE)
+
+2. **Docker Setup:**
+   - Created `Dockerfile` with Ruby 3.1.2 Alpine (lightweight!)
+   - Built `docker-entrypoint.sh` that automatically runs migrations on deploy
+   - Added `.dockerignore` to keep images small
+   - Health check uses the `/api/v1/articles` endpoint
+
+3. **Deployment Workflow:**
+   - Created `Makefile` with commands: `deploy`, `rollback`, `rollback-full`, `logs`, `health`
+   - Every deploy is tagged with git commit SHA (e.g., `news-scraper:00b0171`)
+   - Keeps last 3 Docker images for quick rollbacks
+   - Database backups happen automatically before migrations
+   - Can rollback just the app (fast) or app + database (full restore)
+
+4. **Ruby Version Fix:**
+   - `.ruby-version` said 3.0.0 but `Gemfile.lock` was built with 3.1.2
+   - Updated `.ruby-version` to 3.1.2 to match reality
+   - Docker explicitly uses Ruby 3.1.2 so no ambiguity in production
+
+**Infrastructure (in separate ansible-vps repo):**
+
+The VPS infrastructure lives in `~/dev/ansible-vps` repo. It handles:
+- Dedicated PostgreSQL container (`rails-postgres`) just for this app
+- Nginx reverse proxy for `api.guilsa.com`
+- Docker networking with `infra` network
+- Ansible playbooks for infrastructure setup
+
+**Key architectural decision:** Kept deployment config IN this Rails repo, not in the ansible repo. Why?
+- Can deploy from anywhere (just need SSH keys)
+- No dependency on ansible for daily deploys
+- Self-contained: clone this repo → deploy immediately
+- Infrastructure repo only needed for one-time VPS setup or infrastructure changes
+
+**The workflow:**
+
+```bash
+# Daily deployment (from this repo):
+cd backend
+make deploy              # Builds, migrates, deploys to Hetzner
+make logs                # View container logs
+make rollback VERSION=abc1234  # Rollback if needed
+
+# Infrastructure updates (from ansible-vps repo):
+ansible-playbook -l hetzner playbooks/orchestrate.yml
+```
+
+**Current state:**
+- ✅ Deployed to Hetzner VPS at `api.guilsa.com`
+- ✅ PostgreSQL running in dedicated container
+- ✅ Automated migrations working
+- ✅ Scraper tested and working (scraped 23 articles from Memeorandum)
+- ✅ API responding correctly: `GET /api/v1/articles`, `POST /api/v1/articles`
+- ✅ Rollback system in place (app-only and full)
+
+**Git commits:**
+- In this repo: `874191e` (security fix), `00b0171` (Docker setup)
+- In ansible-vps repo: `88c31b1` (Rails infra), `b2b47b1` (secrets), `2c325be` (fix)
+
+**What's NOT done (future work):**
+- SSL/HTTPS: Currently relying on Cloudflare → nginx (HTTP locally)
+- Background jobs: Using Active Job `:async` (in-memory). Could add Sidekiq + Redis later for persistence
+- Error tracking: Not yet connected to GlitchTip (easy to add when needed)
+- Scheduled scraping: No cron job yet, have to trigger via API
+
+**Lessons learned working with Claude Code:**
+- Ask questions BEFORE building (we did "Option C" planning)
+- Keep repos separate with clear boundaries (app vs infrastructure)
+- Use background agents to explore while planning
+- Systematic commits in the right repo for each change
+- Self-contained deployment >> complex dependencies
+
+**Why this approach rocks for active development:**
+- Deploy multiple times per day with one command
+- Rollback in 3 seconds if something breaks
+- Database backups automatic (safety net)
+- Git SHA tagging means you always know what's deployed
+- Can test locally with Docker if needed
+
+Next time I touch this: Just run `make deploy` from backend directory. That's it.
+
+---
+
 2025
 
 ## Aug 14
