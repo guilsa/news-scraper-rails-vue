@@ -1,0 +1,62 @@
+---
+- name: Deploy News Scraper Rails Application Infrastructure
+  hosts: production
+  become: true
+
+  tasks:
+    - name: Create application directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - /opt/news-scraper
+        - /data/rails-postgres
+        - /opt/backups/news-scraper
+
+    - name: Copy docker-compose.yml to VPS
+      copy:
+        src: ../docker-compose.yml
+        dest: /opt/news-scraper/docker-compose.yml
+        mode: "0644"
+
+    - name: Create .env file with secrets
+      copy:
+        dest: /opt/news-scraper/.env
+        mode: "0600"
+        content: |
+          RAILS_POSTGRES_PASSWORD={{ rails_postgres_password }}
+          APP_PORT={{ app_port }}
+          DATABASE_URL={{ database_url }}
+          SECRET_KEY_BASE={{ news_scraper_secret_key_base }}
+          NEWS_SCRAPER_API_TOKEN={{ news_scraper_api_token }}
+          ENABLE_SCHEDULER={{ enable_scheduler }}
+          SCRAPE_INTERVAL={{ scrape_interval }}
+
+    - name: Deploy postgres container
+      community.docker.docker_compose_v2:
+        project_src: /opt/news-scraper
+        services:
+          - rails-postgres
+        state: present
+        pull: always
+
+    - name: Configure nginx for Rails API
+      template:
+        src: ../templates/rails-api.conf.j2
+        dest: /etc/nginx/sites-available/{{ app_domain }}
+        mode: "0644"
+      notify: reload nginx
+
+    - name: Enable nginx site
+      file:
+        src: /etc/nginx/sites-available/{{ app_domain }}
+        dest: /etc/nginx/sites-enabled/{{ app_domain }}
+        state: link
+      notify: reload nginx
+
+  handlers:
+    - name: reload nginx
+      service:
+        name: nginx
+        state: reloaded

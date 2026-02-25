@@ -1,0 +1,52 @@
+services:
+  rails-postgres:
+    image: postgres:16-alpine
+    container_name: rails-postgres
+    environment:
+      - POSTGRES_DB=newscraper
+      - POSTGRES_USER=newscraper
+      - POSTGRES_PASSWORD=${RAILS_POSTGRES_PASSWORD}
+    volumes:
+      - /data/rails-postgres:/var/lib/postgresql/data
+      - /opt/backups/news-scraper:/backups
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U newscraper"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - rails-network
+
+  news-scraper:
+    image: news-scraper:latest
+    container_name: rails-news-scraper
+    depends_on:
+      rails-postgres:
+        condition: service_healthy
+    environment:
+      - RAILS_ENV=production
+      - PORT=${APP_PORT}
+      - RAILS_LOG_TO_STDOUT=true
+      - RAILS_SERVE_STATIC_FILES=true
+      - DATABASE_URL=${DATABASE_URL}
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+      - NEWS_SCRAPER_API_TOKEN=${NEWS_SCRAPER_API_TOKEN}
+      - ENABLE_SCHEDULER=${ENABLE_SCHEDULER}
+      - SCRAPE_INTERVAL=${SCRAPE_INTERVAL}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:${APP_PORT}/api/v1/articles"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+    ports:
+      - "${APP_PORT}:${APP_PORT}"
+    restart: unless-stopped
+    networks:
+      - rails-network
+
+networks:
+  rails-network:
+    name: rails-network
+    driver: bridge

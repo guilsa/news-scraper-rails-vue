@@ -1,0 +1,17 @@
+---
+# Rails application configuration
+app_name: news-scraper
+app_domain: api.guilsa.com
+app_port: 3000
+
+# Database configuration
+rails_postgres_password: "a8f3c9e2d7b6f1a4e8c5d2b9f7a3e6c1d8b4f2a9e7c3d1b8f5a2e9c6d3b1f8a4"
+database_url: "postgresql://newscraper:{{ rails_postgres_password }}@rails-postgres:5432/newscraper"
+
+# Rails secrets
+news_scraper_api_token: "c2f7a9e4d1b8f5a3e9c6d2b7f4a1e8c5d3b9f6a2e7c4d1b8f5a3e9c6d2b7f4a1"
+news_scraper_secret_key_base: "f9a7e3c1d8b5f2a9e6c3d1b8f4a2e7c5d9b6f3a1e8c4d2b7f5a3e9c6d1b8f4a2e7c5d9b3f6a1e8c4d2b7f5a9e6c3d1b8f4a2e7c5d9b6f3a1e8c4d2b7f5a3e9c6"
+
+# Scheduler configuration
+enable_scheduler: "true"
+scrape_interval: "3h"
