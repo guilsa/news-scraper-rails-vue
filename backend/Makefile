@@ -1,8 +1,8 @@
 APP_NAME := news-scraper
 VPS ?= root@racknerd
-REMOTE_APP_DIR := /opt/docker-apps/$(APP_NAME)
+REMOTE_APP_DIR := /opt/$(APP_NAME)
 BACKUP_DIR := /opt/backups/$(APP_NAME)
-COMPOSE_FILE := /opt/docker-apps/docker-compose.yml
+COMPOSE_FILE := /opt/$(APP_NAME)/docker-compose.yml
 
 # Get current git commit SHA
 GIT_SHA := $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
@@ -26,6 +26,7 @@ deploy:
 		--exclude log \
 		--exclude node_modules \
 		--exclude vendor/bundle \
+		--exclude docker-compose.yml \
 		./ $(VPS):$(REMOTE_APP_DIR)/
 
 	@echo "📝 Step 3/6: Writing version info..."
@@ -38,7 +39,7 @@ deploy:
 	@ssh $(VPS) "cd $(REMOTE_APP_DIR) && docker build -t $(IMAGE_TAG) -t $(IMAGE_LATEST) ."
 
 	@echo "🔄 Step 6/6: Restarting container..."
-	@ssh $(VPS) "cd /opt/docker-apps && docker compose up -d $(APP_NAME)"
+	@ssh $(VPS) "cd $(REMOTE_APP_DIR) && docker compose up -d $(APP_NAME)"
 
 	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 	@echo "✅ Deployment complete!"
@@ -80,7 +81,7 @@ rollback:
 	@ssh $(VPS) "docker tag $(APP_NAME):$(VERSION) $(IMAGE_LATEST)"
 
 	@echo "🔄 Restarting container with previous version..."
-	@ssh $(VPS) "cd /opt/docker-apps && docker compose up -d $(APP_NAME)"
+	@ssh $(VPS) "cd $(REMOTE_APP_DIR) && docker compose up -d $(APP_NAME)"
 
 	@echo ""
 	@echo "✅ Rollback complete!"
@@ -119,7 +120,7 @@ logs:
 
 ps:
 	@echo "📊 Container status:"
-	@ssh $(VPS) "cd /opt/docker-apps && docker compose ps $(APP_NAME)"
+	@ssh $(VPS) "cd $(REMOTE_APP_DIR) && docker compose ps $(APP_NAME)"
 
 health:
 	@echo "🏥 Health check for $(APP_NAME)..."
