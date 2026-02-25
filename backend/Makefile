@@ -1,5 +1,5 @@
 APP_NAME := news-scraper
-VPS ?= root@hetzner
+VPS ?= root@racknerd
 REMOTE_APP_DIR := /opt/docker-apps/$(APP_NAME)
 BACKUP_DIR := /opt/backups/$(APP_NAME)
 COMPOSE_FILE := /opt/docker-apps/docker-compose.yml
@@ -115,7 +115,7 @@ rollback-full:
 
 logs:
 	@echo "📋 Showing logs for $(APP_NAME)..."
-	@ssh $(VPS) "docker logs -f --tail 100 express-$(APP_NAME)"
+	@ssh $(VPS) "docker logs -f --tail 100 rails-$(APP_NAME)"
 
 ps:
 	@echo "📊 Container status:"
