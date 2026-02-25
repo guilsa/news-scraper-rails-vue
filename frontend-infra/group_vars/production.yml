@@ -1,0 +1,5 @@
+---
+# news.guilsa.com frontend static site configuration
+site_domain: news.guilsa.com
+site_root: /var/www/html/news.guilsa.com
+local_dist_path: ../frontend/dist

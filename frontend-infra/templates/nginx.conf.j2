@@ -1,0 +1,18 @@
+server {
+	listen 80;
+	listen 443 ssl;
+
+	# SSL certificates (self-signed for now)
+	ssl_certificate /etc/ssl/certs/nginx-selfsigned.crt;
+	ssl_certificate_key /etc/ssl/private/nginx-selfsigned.key;
+
+	server_name {{ site_domain }} www.{{ site_domain }};
+	root {{ site_root }};
+	index index.html index.htm;
+
+	location / {
+		# Support SPA (Single Page Application) routing
+		# Falls back to index.html for client-side routing
+		try_files $uri $uri/ /index.html;
+	}
+}
