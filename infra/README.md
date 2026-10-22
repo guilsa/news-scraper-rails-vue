@@ -80,3 +80,30 @@ ssh root@racknerd "docker logs rails-news-scraper"
 # Test API
 curl https://api.guilsa.com/api/v1/articles
 ```
+
+## Health-check deadlines
+
+The Rails probe uses a one-second connection timeout and a two-second total
+curl timeout. Postgres uses `pg_isready -t 2`. Both have a five-second Docker
+health-check deadline, allowing probes to exit and Docker to collect them.
+
+On RackNerd, probes killed by Docker's deadline left stale exec PID files in
+`/run/containerd` until the runtime filesystem filled. An internal timeout
+avoids the reproduced failure path while still reporting an unhealthy service.
+Keep the Compose and Dockerfile probe definitions aligned.
+
+The article-list endpoint can be slow; investigate its latency separately
+and consider a lightweight readiness endpoint. A failed probe must not become
+a reason to increase Docker's deadline indefinitely.
+
+After copying this Compose file to `/opt/news-scraper/docker-compose.yml`,
+apply these probe-only changes using the existing images:
+
+```bash
+ssh racknerd 'cd /opt/news-scraper && docker compose config -q && docker compose up -d --pull never rails-postgres news-scraper'
+```
+
+The infrastructure playbook normally pulls Postgres, while `backend/Makefile`
+builds a new Rails image. Neither is necessary just to apply these Compose
+health-check changes. A future image build includes the updated fallback
+Dockerfile probe.

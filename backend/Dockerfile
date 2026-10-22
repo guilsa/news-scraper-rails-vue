@@ -79,8 +79,8 @@ ENV RAILS_ENV=production \
 
 EXPOSE 3000
 
-HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-  CMD curl -f http://127.0.0.1:3000/api/v1/articles || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD curl --silent --show-error --fail --connect-timeout 1 --max-time 2 "http://127.0.0.1:${PORT:-3000}/api/v1/articles" || exit 1
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]

@@ -11,9 +11,9 @@ services:
       - /opt/backups/news-scraper:/backups
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U newscraper"]
+      test: ["CMD", "pg_isready", "-U", "newscraper", "-d", "newscraper", "-t", "2"]
       interval: 10s
-      timeout: 3s
+      timeout: 5s
       retries: 3
     networks:
       - rails-network
@@ -35,9 +35,9 @@ services:
       - ENABLE_SCHEDULER=${ENABLE_SCHEDULER}
       - SCRAPE_INTERVAL=${SCRAPE_INTERVAL}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://127.0.0.1:${APP_PORT}/api/v1/articles"]
+      test: ["CMD", "curl", "--silent", "--show-error", "--fail", "--connect-timeout", "1", "--max-time", "2", "http://127.0.0.1:${APP_PORT}/api/v1/articles"]
       interval: 30s
-      timeout: 3s
+      timeout: 5s
       retries: 3
       start_period: 40s
     ports:
