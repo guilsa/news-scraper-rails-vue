@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  get "/healthz", to: "health#show"
+
   # resources :articles
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 

@@ -92,12 +92,14 @@ On RackNerd, probes killed by Docker's deadline left stale exec PID files in
 avoids the reproduced failure path while still reporting an unhealthy service.
 Keep the Compose and Dockerfile probe definitions aligned.
 
-The article-list endpoint can be slow; investigate its latency separately
-and consider a lightweight readiness endpoint. A failed probe must not become
-a reason to increase Docker's deadline indefinitely.
+The probe calls `/healthz`, which checks a database connection with `SELECT 1`
+and returns an empty HTTP 200 or HTTP 503 on a database error. It does not load
+or serialize articles. The article-list endpoint's performance is separate
+from readiness. Both Compose and the image use the same readiness endpoint.
 
-After copying this Compose file to `/opt/news-scraper/docker-compose.yml`,
-apply these probe-only changes using the existing images:
+Once the running image includes `/healthz`, future probe-only changes can be
+applied after copying this Compose file to `/opt/news-scraper/docker-compose.yml`
+using the existing images:
 
 ```bash
 ssh racknerd 'cd /opt/news-scraper && docker compose config -q && docker compose up -d --pull never rails-postgres news-scraper'
@@ -107,3 +109,18 @@ The infrastructure playbook normally pulls Postgres, while `backend/Makefile`
 builds a new Rails image. Neither is necessary just to apply these Compose
 health-check changes. A future image build includes the updated fallback
 Dockerfile probe.
+
+### Readiness endpoint tests
+
+`backend/test/health_check_test.rb` covers the empty successful response,
+database connection failure, and connection-pool exhaustion. Run it with the
+backend's installed bundle:
+
+```bash
+cd backend
+bundle exec ruby test/health_check_test.rb
+```
+
+Adding `/healthz` requires an application image containing the controller and
+route. Apply the updated Compose file together with that image; the previous
+probe-only rollout command assumes the application endpoint already exists.

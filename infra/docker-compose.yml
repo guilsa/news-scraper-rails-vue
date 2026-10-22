@@ -35,7 +35,7 @@ services:
       - ENABLE_SCHEDULER=${ENABLE_SCHEDULER}
       - SCRAPE_INTERVAL=${SCRAPE_INTERVAL}
     healthcheck:
-      test: ["CMD", "curl", "--silent", "--show-error", "--fail", "--connect-timeout", "1", "--max-time", "2", "http://127.0.0.1:${APP_PORT}/api/v1/articles"]
+      test: ["CMD", "curl", "--silent", "--show-error", "--fail", "--connect-timeout", "1", "--max-time", "2", "http://127.0.0.1:${APP_PORT}/healthz"]
       interval: 30s
       timeout: 5s
       retries: 3

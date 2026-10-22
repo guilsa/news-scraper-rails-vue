@@ -124,6 +124,6 @@ ps:
 
 health:
 	@echo "🏥 Health check for $(APP_NAME)..."
-	@ssh $(VPS) "curl -f http://localhost:3000/api/v1/articles && echo '\n✅ API is healthy' || echo '❌ API is not responding'"
+	@ssh $(VPS) "curl -fsS --connect-timeout 1 --max-time 2 http://localhost:3000/healthz && echo '\n✅ API is healthy'"
 
 .DEFAULT_GOAL := deploy
